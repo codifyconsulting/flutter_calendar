@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:date_utils/date_utils.dart';
+
+import 'date_utils.dart';
 
 class CalendarTile extends StatelessWidget {
   final VoidCallback onDateSelected;
@@ -24,29 +25,31 @@ class CalendarTile extends StatelessWidget {
 
   Widget renderDateOrDayOfWeek(BuildContext context) {
     if (isDayOfWeek) {
-      return new InkWell(
-        child: new Container(
+      return InkWell(
+        child: Container(
           alignment: Alignment.center,
-          child: new Text(
+          child: Text(
             dayOfWeek,
             style: dayOfWeekStyles,
           ),
         ),
       );
     } else {
-      return new InkWell(
+      return InkWell(
         onTap: onDateSelected,
-        child: new Container(
+        child: Container(
           decoration: isSelected
-              ? new BoxDecoration(
+              ? BoxDecoration(
                   shape: BoxShape.circle,
                   color: Theme.of(context).primaryColor,
                 )
-              : new BoxDecoration(),
+              : BoxDecoration(),
           alignment: Alignment.center,
-          child: new Text(
+          child: Text(
             Utils.formatDay(date).toString(),
-            style: isSelected ? Theme.of(context).primaryTextTheme.body1 : dateStyles,
+            style: isSelected
+                ? Theme.of(context).primaryTextTheme.body1
+                : dateStyles,
             textAlign: TextAlign.center,
           ),
         ),
@@ -57,12 +60,12 @@ class CalendarTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (child != null) {
-      return new InkWell(
+      return InkWell(
         child: child,
         onTap: onDateSelected,
       );
     }
-    return new Container(
+    return Container(
       child: renderDateOrDayOfWeek(context),
     );
   }

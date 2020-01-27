@@ -3,7 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:tuple/tuple.dart';
 import 'package:flutter_calendar/calendar_tile.dart';
-import 'package:date_utils/date_utils.dart';
+
+import 'date_utils.dart';
 
 typedef DayBuilder(BuildContext context, DateTime day);
 
@@ -17,28 +18,30 @@ class Calendar extends StatefulWidget {
   final bool showCalendarPickerIcon;
   final DateTime initialCalendarDateOverride;
 
-  Calendar(
-      {this.onDateSelected,
-      this.onSelectedRangeChange,
-      this.isExpandable: false,
-      this.dayBuilder,
-      this.showTodayAction: true,
-      this.showChevronsToChangeRange: true,
-      this.showCalendarPickerIcon: true,
-      this.initialCalendarDateOverride});
+  Calendar({
+    this.onDateSelected,
+    this.onSelectedRangeChange,
+    this.isExpandable: false,
+    this.dayBuilder,
+    this.showTodayAction: true,
+    this.showChevronsToChangeRange: true,
+    this.showCalendarPickerIcon: true,
+    this.initialCalendarDateOverride,
+  });
 
   @override
-  _CalendarState createState() => new _CalendarState();
+  _CalendarState createState() => _CalendarState();
 }
 
 class _CalendarState extends State<Calendar> {
-  final calendarUtils = new Utils();
+  final calendarUtils = Utils();
   List<DateTime> selectedMonthsDays;
   Iterable<DateTime> selectedWeeksDays;
-  DateTime _selectedDate = new DateTime.now();
+  DateTime _selectedDate = DateTime.now();
   String currentMonth;
   bool isExpanded = false;
   String displayMonth;
+
   DateTime get selectedDate => _selectedDate;
 
   void initState() {
@@ -62,65 +65,69 @@ class _CalendarState extends State<Calendar> {
     var rightOuterIcon;
 
     if (widget.showCalendarPickerIcon) {
-      rightInnerIcon = new IconButton(
+      rightInnerIcon = IconButton(
         onPressed: () => selectDateFromPicker(),
-        icon: new Icon(Icons.calendar_today),
+        icon: Icon(Icons.calendar_today),
       );
     } else {
-      rightInnerIcon = new Container();
+      rightInnerIcon = Container();
     }
 
     if (widget.showChevronsToChangeRange) {
-      leftOuterIcon = new IconButton(
+      leftOuterIcon = IconButton(
         onPressed: isExpanded ? previousMonth : previousWeek,
-        icon: new Icon(Icons.chevron_left),
+        icon: Icon(Icons.chevron_left),
       );
-      rightOuterIcon = new IconButton(
+      rightOuterIcon = IconButton(
         onPressed: isExpanded ? nextMonth : nextWeek,
-        icon: new Icon(Icons.chevron_right),
+        icon: Icon(Icons.chevron_right),
       );
     } else {
-      leftOuterIcon = new Container();
-      rightOuterIcon = new Container();
+      leftOuterIcon = Container();
+      rightOuterIcon = Container();
     }
 
     if (widget.showTodayAction) {
-      leftInnerIcon = new InkWell(
-        child: new Text('Today'),
+      leftInnerIcon = InkWell(
+        child: Text('Today'),
         onTap: resetToToday,
       );
     } else {
-      leftInnerIcon = new Container();
+      leftInnerIcon = Container();
     }
 
-    return new Row(
+    return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        leftOuterIcon ?? new Container(),
-        leftInnerIcon ?? new Container(),
-        new Text(
+        leftOuterIcon ?? Container(),
+        leftInnerIcon ?? Container(),
+        Text(
           displayMonth,
-          style: new TextStyle(
+          style: TextStyle(
             fontSize: 20.0,
           ),
         ),
-        rightInnerIcon ?? new Container(),
-        rightOuterIcon ?? new Container(),
+        rightInnerIcon ?? Container(),
+        rightOuterIcon ?? Container(),
       ],
     );
   }
 
-  Widget get calendarGridView {
-    return new Container(
-      child: new GestureDetector(
+  Widget calendarGridView(BuildContext context) {
+    final shortestSide = MediaQuery.of(context).size.shortestSide;
+    final useMobileLayout = shortestSide < 600;
+
+    return Container(
+      child: GestureDetector(
         onHorizontalDragStart: (gestureDetails) => beginSwipe(gestureDetails),
         onHorizontalDragUpdate: (gestureDetails) =>
             getDirection(gestureDetails),
         onHorizontalDragEnd: (gestureDetails) => endSwipe(gestureDetails),
-        child: new GridView.count(
+        child: GridView.count(
           shrinkWrap: true,
           crossAxisCount: 7,
-          padding: new EdgeInsets.only(bottom: 0.0),
+          childAspectRatio: useMobileLayout ? 1.0 : 3 / 1,
+          padding: EdgeInsets.only(bottom: 0.0),
           children: calendarBuilder(),
         ),
       ),
@@ -135,7 +142,7 @@ class _CalendarState extends State<Calendar> {
     Utils.weekdays.forEach(
       (day) {
         dayWidgets.add(
-          new CalendarTile(
+          CalendarTile(
             isDayOfWeek: true,
             dayOfWeek: day,
           ),
@@ -158,7 +165,7 @@ class _CalendarState extends State<Calendar> {
 
         if (this.widget.dayBuilder != null) {
           dayWidgets.add(
-            new CalendarTile(
+            CalendarTile(
               child: this.widget.dayBuilder(context, day),
               date: day,
               onDateSelected: () => handleSelectedDateAndUserCallback(day),
@@ -166,7 +173,7 @@ class _CalendarState extends State<Calendar> {
           );
         } else {
           dayWidgets.add(
-            new CalendarTile(
+            CalendarTile(
               onDateSelected: () => handleSelectedDateAndUserCallback(day),
               date: day,
               dateStyles: configureDateStyle(monthStarted, monthEnded),
@@ -185,17 +192,15 @@ class _CalendarState extends State<Calendar> {
 
     if (isExpanded) {
       final TextStyle body1StyleDisabled = body1Style.copyWith(
-        color: Color.fromARGB(
-          100, 
-          body1Style.color.red, 
-          body1Style.color.green, 
-          body1Style.color.blue,
-        )
-      );
+          color: Color.fromARGB(
+        100,
+        body1Style.color.red,
+        body1Style.color.green,
+        body1Style.color.blue,
+      ));
 
-      dateStyles = monthStarted && !monthEnded
-          ? body1Style
-          : body1StyleDisabled;
+      dateStyles =
+          monthStarted && !monthEnded ? body1Style : body1StyleDisabled;
     } else {
       dateStyles = body1Style;
     }
@@ -204,36 +209,36 @@ class _CalendarState extends State<Calendar> {
 
   Widget get expansionButtonRow {
     if (widget.isExpandable) {
-      return new Row(
+      return Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
-          new Text(Utils.fullDayFormat(selectedDate)),
-          new IconButton(
+          Text(Utils.fullDayFormat(selectedDate)),
+          IconButton(
             iconSize: 20.0,
-            padding: new EdgeInsets.all(0.0),
+            padding: EdgeInsets.all(0.0),
             onPressed: toggleExpanded,
             icon: isExpanded
-                ? new Icon(Icons.arrow_drop_up)
-                : new Icon(Icons.arrow_drop_down),
+                ? Icon(Icons.arrow_drop_up)
+                : Icon(Icons.arrow_drop_down),
           ),
         ],
       );
     } else {
-      return new Container();
+      return Container();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return new Container(
-      child: new Column(
+    return Container(
+      child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           nameAndIconRow,
-          new ExpansionCrossFade(
-            collapsed: calendarGridView,
-            expanded: calendarGridView,
+          ExpansionCrossFade(
+            collapsed: calendarGridView(context),
+            expanded: calendarGridView(context),
             isExpanded: isExpanded,
           ),
           expansionButtonRow
@@ -243,7 +248,7 @@ class _CalendarState extends State<Calendar> {
   }
 
   void resetToToday() {
-    _selectedDate = new DateTime.now();
+    _selectedDate = DateTime.now();
     var firstDayOfCurrentWeek = Utils.firstDayOfWeek(_selectedDate);
     var lastDayOfCurrentWeek = Utils.lastDayOfWeek(_selectedDate);
 
@@ -311,7 +316,7 @@ class _CalendarState extends State<Calendar> {
   }
 
   void updateSelectedRange(DateTime start, DateTime end) {
-    var selectedRange = new Tuple2<DateTime, DateTime>(start, end);
+    var selectedRange = Tuple2<DateTime, DateTime>(start, end);
     if (widget.onSelectedRangeChange != null) {
       widget.onSelectedRangeChange(selectedRange);
     }
@@ -320,9 +325,9 @@ class _CalendarState extends State<Calendar> {
   Future<Null> selectDateFromPicker() async {
     DateTime selected = await showDatePicker(
       context: context,
-      initialDate: _selectedDate ?? new DateTime.now(),
-      firstDate: new DateTime(1960),
-      lastDate: new DateTime(2050),
+      initialDate: _selectedDate ?? DateTime.now(),
+      firstDate: DateTime(1960),
+      lastDate: DateTime(2050),
     );
 
     if (selected != null) {
@@ -400,18 +405,25 @@ class _CalendarState extends State<Calendar> {
   }
 }
 
+///
+///
+///
 class ExpansionCrossFade extends StatelessWidget {
   final Widget collapsed;
   final Widget expanded;
   final bool isExpanded;
 
-  ExpansionCrossFade({this.collapsed, this.expanded, this.isExpanded});
+  ExpansionCrossFade({
+    this.collapsed,
+    this.expanded,
+    this.isExpanded,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return new Flexible(
+    return Flexible(
       flex: 1,
-      child: new AnimatedCrossFade(
+      child: AnimatedCrossFade(
         firstChild: collapsed,
         secondChild: expanded,
         firstCurve: const Interval(0.0, 1.0, curve: Curves.fastOutSlowIn),
