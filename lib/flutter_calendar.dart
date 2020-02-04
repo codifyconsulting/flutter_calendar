@@ -123,33 +123,30 @@ class _CalendarState extends State<Calendar> {
         onHorizontalDragUpdate: (gestureDetails) =>
             getDirection(gestureDetails),
         onHorizontalDragEnd: (gestureDetails) => endSwipe(gestureDetails),
-        child: GridView.count(
-          shrinkWrap: true,
-          crossAxisCount: 7,
-          childAspectRatio: useMobileLayout ? (1.12 / 1) : (2.6 / 1),
-          padding: EdgeInsets.only(bottom: 0.0),
-          children: calendarBuilder(),
-        ),
+        child: calendarBuilder(context),
       ),
     );
   }
 
-  List<Widget> calendarBuilder() {
-    List<Widget> dayWidgets = [];
+  Widget calendarBuilder(BuildContext context) {
     List<DateTime> calendarDays =
         isExpanded ? selectedMonthsDays : selectedWeeksDays;
 
-    Utils.weekdays.forEach(
-      (day) {
-        dayWidgets.add(
-          CalendarTile(
-            isDayOfWeek: true,
-            dayOfWeek: day,
-          ),
-        );
-      },
+    final dayNames = Row(
+      mainAxisSize: MainAxisSize.max,
+      children: Utils.weekdays
+          .map(
+            (day) => Expanded(
+              child: CalendarTile(
+                isDayOfWeek: true,
+                dayOfWeek: day,
+              ),
+            ),
+          )
+          .toList(),
     );
 
+    final List<Widget> dayWidgets = [];
     bool monthStarted = false;
     bool monthEnded = false;
 
@@ -183,7 +180,17 @@ class _CalendarState extends State<Calendar> {
         }
       },
     );
-    return dayWidgets;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        dayNames,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: dayWidgets.map((d) => Expanded(child: d)).toList(),
+        ),
+      ],
+    );
   }
 
   TextStyle configureDateStyle(monthStarted, monthEnded) {
